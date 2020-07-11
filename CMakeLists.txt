@@ -21,10 +21,18 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${dialect}")
 
 add_subdirectory(src)
 
-add_test( NAME test_isonoke_02_05
-  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 2 5
+add_test( NAME test_isonoke_04_04
+  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 4 4 20
   )
 
-add_test( NAME test_isonoke_10_05
-  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 10 5
+add_test( NAME test_isonoke_02_12
+  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 2 12 2
+  )
+
+add_test( NAME test_isonoke_08_06
+  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 8 6 2
+  )
+
+add_test( NAME test_isonoke_20_04
+  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 20 4 2
   )
