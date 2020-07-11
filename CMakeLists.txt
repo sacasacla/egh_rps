@@ -20,3 +20,11 @@ set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${bounds}")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${dialect}")
 
 add_subdirectory(src)
+
+add_test( NAME test_isonoke_02_05
+  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 2 5
+  )
+
+add_test( NAME test_isonoke_10_05
+  COMMAND egh_rps ${CMAKE_CURRENT_SOURCE_DIR}/dat/isonoke.txt 10 5
+  )
