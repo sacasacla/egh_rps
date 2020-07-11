@@ -6,7 +6,7 @@ implicit none
 type(rps_hmm)              :: h
 type(rps_data),allocatable :: dat(:)
 character(256)             :: arg
-integer                    :: ndm,nep
+integer                    :: ndm,nep,nmc
 integer                    :: iyear
 !
   call GET_COMMAND_ARGUMENT(1,arg)
@@ -20,9 +20,13 @@ integer                    :: iyear
   read(arg,*,iostat=iyear) nep
   if(iyear/=0) nep = 2
 !
+  call GET_COMMAND_ARGUMENT(4,arg)
+  read(arg,*,iostat=iyear) nmc
+  if(iyear/=0) nmc = 1
+!
   call get_map(dat,50)
 !
-  call hmm(h,pack(dat,dat%y<2011),pack(dat,dat%y>2010),d=ndm,n=nep)
+  call hmm(h,pack(dat,dat%y<2011),pack(dat,dat%y>2010),d=ndm,n=nep,nmc=nmc)
 !
   do iyear=1992,2020
 !
@@ -101,37 +105,36 @@ contains
     enddo
   end subroutine get_fv
 !
-  subroutine hmm(h,dat,test,d,n)
+  subroutine hmm(h,dat,test,d,n,nmc)
   type(rps_hmm),intent(inout) :: h
   type(rps_data),intent(in)   :: dat(:),test(:)
-  integer,intent(in)          :: d,n
+  integer,intent(in)          :: d,n,nmc
   type(rps_hmm)               :: htest
-  real(8)                     :: wl,wb
   integer                     :: x(n,size(dat)-n)
   integer                     :: x_test(n,size(test)-n)
   integer                     :: i,j
-  integer                     :: wtest(3)
+  integer                     :: wtest(3),wl,wb
 !
     call get_fv(dat,x)
     call get_fv(test,x_test)
 !
-    wb = 0D0
+    wb   = 0
 !
-    do j=1,d
+    call htest%init( d )
 !
-      call htest%init( j )
+    do j=2,n
 !
-      do i=2,n
+      do i=1,nmc
 !
-        call htest%fit(x(:i,:),n_episode=i)
-        wtest = htest%test(x_test(:i,:))
-        wl    = REAL(wtest(1)-wtest(2),8)/REAL(wtest(1)+wtest(2)+wtest(3),8)
+        call htest%fit(x(:j,:),n_episode=j)
+        wtest = htest%test(x_test(:j,:))
+        wl    = wtest(1)-wtest(2)
         if(wl>wb)then
           h  = htest
           wb = wl
-          print'(5i6,2f12.3,2f24.9,A)',j,i, wtest,wl,wb,h%log_likelihood(),h%winning_ratio(),'  *'
+          print'(7i6,2f24.9,A)',d,j,i,wtest,wl,h%log_likelihood(),h%winning_ratio(),'  *'
         else
-          print'(5i6,2f12.3,2f24.9)', j,i, wtest,wl,wb,htest%log_likelihood(),h%winning_ratio()
+          print'(7i6,2f24.9)', d,j,i,wtest,wl,htest%log_likelihood(),h%winning_ratio()
         endif
 !
         FLUSH(6)

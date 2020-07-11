@@ -11,9 +11,9 @@ type rps_hmm
   integer                         :: K = 9
   real(REAL64)                    :: L = -HUGE(0D0)
   real(REAL64)                    :: strategy = 100D0
-  real(REAL64),allocatable,public :: c(:)
-  real(REAL64),allocatable,public :: A(:,:)
-  real(REAL64),allocatable,public :: traceback(:)
+  real(REAL64),allocatable        :: c(:)
+  real(REAL64),allocatable        :: A(:,:)
+  real(REAL64),allocatable        :: traceback(:)
   integer                         :: wld(3) = 0
   type(rps_model),allocatable     :: phi(:)
 contains
@@ -25,6 +25,7 @@ contains
   procedure    :: log_likelihood => rps_hmm_log_likelihood
   procedure    :: winning_ratio  => rps_hmm_winning_ratio
   procedure    :: n_episode      => rps_hmm_n_episode
+  procedure    :: n_dimension    => rps_hmm_n_dimension
   procedure    :: clear          => rps_hmm_clear
   final        :: rps_hmm_destroy
 end type rps_hmm
@@ -100,15 +101,23 @@ contains
    &          pred(this%K) &
    &         )
 !
-    k = 0
+    call RANDOM_SEED()
+!
     do i=1,this%D
-      j = k + 1 ; k = k + n/d
+!
       call this%phi(i)%init( N=n_episode,K=n_event,lam=lambda)
+!
+      call RANDOM_NUMBER( new )
+      j = INT( new * ( n - this%phi(i)%n_episode() - 1 ) ) + 1
+      k = j + this%phi(i)%n_episode()
+!
       call this%phi(i)%maximize(x(:,j:k))
+!
     enddo
 !
     gam(:,:)  = 1D0 / REAL(d,REAL64)
-    xi(:,:,:) = 0D0 ; xi(:,:,1) = this%A(:,:)
+!    xi(:,:,:) = 0D0 ; xi(:,:,1) = this%A(:,:)
+    xi(:,:,:) = 0D0 ; xi(:,:,1) = 1D0 / REAL(d,REAL64)
     a(:,:)    = 1D0 / REAL(d,REAL64)
 !
     nmax = 1000 ; if(PRESENT(maxiter))   nmax = maxiter
@@ -436,6 +445,14 @@ contains
     endif
 !
   end function rps_hmm_n_episode
+!
+  pure elemental function rps_hmm_n_dimension(this) result(res)
+  class(rps_hmm),intent(in) :: this
+  integer                   :: res
+!
+    res = this%D
+!
+  end function rps_hmm_n_dimension
 !
   subroutine rps_hmm_show_status(this,dev)
   class(rps_hmm),intent(in)   :: this

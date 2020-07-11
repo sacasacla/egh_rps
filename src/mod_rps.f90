@@ -244,7 +244,8 @@ contains
     real(REAL64)               :: res,lambda
     integer                    :: i
       res     = 0D0
-      lambda  = EXP( s )
+      lambda  = ERF( s ) + 1D0
+      lambda  = ( lambda + lambda ) * 0.5D0
       do i=1,SIZE(x,2)
         res = res - this%logpdf(x(:,i),lambda)
       enddo
